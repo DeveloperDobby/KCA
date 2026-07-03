@@ -21,8 +21,8 @@ DEFAULT_POSTS_API_TEMPLATE = (
 DEFAULT_CHANNEL_URL_TEMPLATE = "https://pf.kakao.com/{profile_id}/posts"
 DEFAULT_TIMEZONE = "Asia/Seoul"
 DEFAULT_CHECK_INTERVAL_SECONDS = 60
-# GitHub Actions가 6시간마다 새로 시작되므로, 다음 실행과 겹치지 않도록 약 5시간 55분만 감시합니다.
-DEFAULT_RUN_DURATION_SECONDS = 21_300
+# Workflow timeout is 359 minutes. Default loop duration stays slightly under it for clean shutdown.
+DEFAULT_RUN_DURATION_SECONDS = 21_480
 DEFAULT_ERROR_ALERT_COOLDOWN_SECONDS = 1_800
 MAX_SEEN_IDS_PER_CHANNEL = 1_000
 
@@ -645,7 +645,7 @@ def main() -> int:
         "--duration-seconds",
         type=int,
         default=env_int("RUN_DURATION_SECONDS", DEFAULT_RUN_DURATION_SECONDS, minimum=1),
-        help="Maximum runtime in --loop mode. Default: 21300, about 5h55m.",
+        help="Maximum runtime in --loop mode. Default: 21480, 358 minutes.",
     )
     parser.add_argument(
         "--error-alert-cooldown-seconds",
