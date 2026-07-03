@@ -4,7 +4,7 @@ on:
   schedule:
     # UTC 기준 6시간마다 실행합니다.
     # 실행된 Python 프로세스 내부에서 1분마다 카카오 API를 반복 확인합니다.
-    - cron: "0 */6 * * *"
+    - cron: "17 */3 * * *"
   workflow_dispatch:
 
 permissions:
