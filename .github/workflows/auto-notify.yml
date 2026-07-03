@@ -1,0 +1,56 @@
+name: Kakao API Discord Notify
+
+on:
+  schedule:
+    # UTC 기준 6시간마다 실행합니다.
+    # 실행된 Python 프로세스 내부에서 1분마다 카카오 API를 반복 확인합니다.
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kakao-api-channel-notify
+  # 장시간 실행 중인 감시 작업이 중간에 취소되면 해당 실행의 메모리 기준 목록이 사라집니다.
+  # 그래서 새 실행은 기존 실행을 취소하지 않고 대기하게 둡니다.
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    # Python은 약 5시간 55분 동안 실행됩니다.
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --quiet --upgrade pip
+          python -m pip install --quiet -r requirements.txt
+
+      - name: Monitor Kakao channel posts every minute
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # 멘션 대상입니다. 예: 123456789012345678, @everyone, @here
+          DISCORD_MENTION: ${{ secrets.DISCORD_MENTION }}
+          # 이전 버전 호환용입니다. DISCORD_MENTION이 비어 있을 때만 사용됩니다.
+          DISCORD_USER_ID: ${{ secrets.DISCORD_USER_ID }}
+          # 감시할 카카오 채널 프로필 ID 목록입니다. 코드/저장소에는 target ID를 두지 않습니다.
+          # 예: _channelA,_channelB 또는 여러 줄로 입력
+          KAKAO_PROFILE_IDS: ${{ secrets.KAKAO_PROFILE_IDS }}
+          TIMEZONE: Asia/Seoul
+          KAKAO_NOTIFY_ON_BOOTSTRAP: "false"
+          CHECK_INTERVAL_SECONDS: "60"
+          RUN_DURATION_SECONDS: "21300"
+          ERROR_ALERT_COOLDOWN_SECONDS: "1800"
+        run: python kakao_monitor.py --loop
