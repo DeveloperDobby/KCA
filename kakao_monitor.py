@@ -391,20 +391,6 @@ def build_discord_payload(post: KakaoPost, *, channel_url: str, tz_name: str) ->
     if post.image_url:
         embed["image"] = {"url": post.image_url}
 
-    run_url = (
-        os.environ.get("GITHUB_SERVER_URL", "")
-        and os.environ.get("GITHUB_REPOSITORY", "")
-        and os.environ.get("GITHUB_RUN_ID", "")
-    )
-    if run_url:
-        embed["fields"].append(
-            {
-                "name": "GitHub Actions Run",
-                "value": f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
-                "inline": False,
-            }
-        )
-
     return {
         "content": "\n".join(content_lines)[:1900],
         "embeds": [embed],
